@@ -1,0 +1,38 @@
+{
+    "API": "API do Laika",
+    "descricao": "Dados do database que são consumidos pelo site Laika PetShop",
+    "autores": [
+        {
+            "nome": "Rubens Luiz Lobo de Almeida",
+            "contato":"rubensluizlobo@gmail.com"
+        },
+        {
+            "nome": "Pedro Henrique Inocente",
+            "contato": "pedrohrino13@gmail.com"
+
+        }
+    ],
+    "website": "https://leticiamelosilv.github.io/Laika-FRONT/",
+    "figma": "https://www.figma.com/design/96vSodwxNyPirigyNURBLa/PetShop---LAIKA?node-id=0-1&t=QGW0VRYHTii6uMzS-1",
+    "documentacao": "https://docs.google.com/document/d/122DTxx1-itmSQc_1oTVQX1uxwRXTPbeS1ZIYpYF9STQ/edit?usp=sharing",
+    "repositorios": {
+        "Front-end": "https://github.com/leticiamelosilv/Laika-FRONT",
+        "Front-end (CMS)": "https://github.com/MatheusNoronhadaSilva/Laika-front",
+        "Back-end": "https://github.com/rubensl07/Laika-back"
+    },
+    "endpoints_disponiveis": [
+        "Animais",
+        "Agendamentos",
+        "Tipos",
+        "Raças",
+        "Portes",
+        "Produtos",
+        "Categorias",
+        "Funcionários",
+        "Cargos",
+        "Serviços",
+        "Cliente",
+        "Endereço"
+    ],
+    "OBS": "Para Acessar os endpoints, deve se formular o link completo: https://laika-back.onrender.com/v1/laika/(nome do endpoint que deseja acessar)"
+  }

@@ -1,0 +1,404 @@
+DROP DATABASE db_laika;
+CREATE DATABASE db_laika;
+
+-- Use the database
+USE db_laika;
+
+-- Create tbl_endereco
+CREATE TABLE tbl_endereco (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    rua VARCHAR(100) NOT NULL,
+    bairro VARCHAR(50) NOT NULL,
+    cidade VARCHAR(50) NOT NULL,
+    estado CHAR(2) NOT NULL,
+    complemento VARCHAR(100)
+);
+INSERT INTO tbl_endereco (rua, bairro, cidade, estado, complemento) VALUES 
+('Rua Exemplo', 'Bairro Exemplo', 'Cidade Exemplo', 'EX', 'Complemento Exemplo'),
+('Rua ABC', 'Bairro ABC', 'Cidade ABC', 'AB', 'Complemento ABC'),
+('Rua Exemplo2', 'Bairro Exemplo', 'Cidade Exemplo', 'EX', 'Complemento Exemplo'),
+('Rua Exemplo3', 'Bairro Exemplo', 'Cidade Exemplo', 'EX', 'Complemento Exemplo')
+;
+SET @endereco_id = LAST_INSERT_ID();
+
+
+-- Create tbl_clientes
+CREATE TABLE tbl_clientes (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(11),
+    email VARCHAR(100) NOT NULL,
+    senha VARCHAR(255) NOT NULL,
+    img VARCHAR(200),
+	endereco_id INT,
+    FOREIGN KEY (endereco_id) REFERENCES tbl_endereco(id)
+);
+INSERT INTO tbl_clientes (nome, telefone, email, senha, endereco_id, img) VALUES 
+('Fernando Leonid', '1234567890', 'cliente@exemplo.com', 'senha_hash', @endereco_id, 'imagem.jpg'),
+('Nome do Cliente2', '1234567890', 'cliente@exemplo.com', 'senha_hash', @endereco_id, 'imagem.jpg');
+
+-- Create tbl_produtos
+CREATE TABLE tbl_produtos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    preco DECIMAL(10, 2) NOT NULL,
+    img VARCHAR(200),
+    quantidade_estoque INT NOT NULL
+);
+
+-- Create tbl_avaliacoes
+CREATE TABLE tbl_avaliacoes (
+	id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nota INT NOT NULL,
+    comentario TEXT,
+    data_avaliacao DATETIME NOT NULL,
+	cliente_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES tbl_clientes(id),
+    FOREIGN KEY (produto_id) REFERENCES tbl_produtos(id)
+);
+
+-- Create tbl_categorias
+CREATE TABLE tbl_categorias (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(50) NOT NULL
+);
+
+-- Create tbl_categorias_produtos
+CREATE TABLE tbl_categorias_produtos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    produto_id INT NOT NULL,
+    categoria_id INT NOT NULL,
+    FOREIGN KEY (produto_id) REFERENCES tbl_produtos(id),
+    FOREIGN KEY (categoria_id) REFERENCES tbl_categorias(id)
+);
+
+-- Create tbl_pedido_status
+CREATE TABLE tbl_pedido_status (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(50) NOT NULL
+);
+
+-- Create tbl_pedidos
+CREATE TABLE tbl_pedidos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    data_pedido DATETIME NOT NULL,
+    total DECIMAL(10, 2) NOT NULL,
+	cliente_id INT NOT NULL,
+	pedido_status_id INT NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES tbl_clientes(id),
+    FOREIGN KEY (pedido_status_id) REFERENCES tbl_pedido_status(id)
+);
+
+-- Create tbl_itens_pedido
+CREATE TABLE tbl_itens_pedido (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    quantidade INT NOT NULL,
+    preco_unitario DECIMAL(10, 2) NOT NULL,
+	pedido_id INT NOT NULL,
+    produto_id INT NOT NULL,
+    FOREIGN KEY (pedido_id) REFERENCES tbl_pedidos(id),
+    FOREIGN KEY (produto_id) REFERENCES tbl_produtos(id)
+);
+
+-- Create tbl_pagamentos
+-- A RESOLVER ----------------------------------------------------------------------------------
+CREATE TABLE tbl_pagamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    metodo_pagamento VARCHAR(50),
+    data_pagamento DATE,
+    valor DECIMAL(10, 2),
+	pedido_id INT,
+    FOREIGN KEY (pedido_id) REFERENCES tbl_pedidos(id)
+);
+-----------------------------------------------------------------------------------------------
+-- Create tbl_animal_tipo
+CREATE TABLE tbl_animal_tipo (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(50) NOT NULL,
+    icon VARCHAR(200) NOT NULL
+);
+INSERT INTO tbl_animal_tipo (nome,icon) VALUES 
+("Cachorro","https://cdn-icons-png.flaticon.com/128/2924/2924299.png"),
+("Gato","https://cdn-icons-png.flaticon.com/128/7577/7577239.png"),
+("Tartaruga","https://cdn-icons-png.flaticon.com/128/3077/3077421.png"),
+("Pássaro","https://cdn-icons-png.flaticon.com/128/92/92022.png"),
+("Cobra","https://cdn-icons-png.flaticon.com/128/8616/8616077.png"),
+("Hamster","https://cdn-icons-png.flaticon.com/128/84/84419.png");
+
+-- Create tbl_animal_raca
+CREATE TABLE tbl_animal_raca (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    tipo_id INT NOT NULL,
+    srd BOOLEAN DEFAULT FALSE,
+	FOREIGN KEY (tipo_id) REFERENCES tbl_animal_tipo(id),
+    nome VARCHAR(50) NOT NULL
+);
+describe tbl_animal_raca;
+INSERT INTO tbl_animal_raca (tipo_id, nome, srd) VALUES 
+(1, "Cachorro", true),
+(2, "Gato", true),
+(3, "Tartaruga", true),
+(4, "Pássaro", true),
+(5, "Cobra", true),
+(6, "Hamster", true);
+INSERT INTO tbl_animal_raca (tipo_id, nome) VALUES 
+(1,"Labrador"),
+(1,"Pincher"),
+(1,"Salsicha"),
+(2,"Siamês"),
+(2,"Persa"),
+(2,"Inglês");
+-- Create tbl_animal_porte
+CREATE TABLE tbl_animal_porte (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(50) NOT NULL
+);
+INSERT INTO tbl_animal_porte (nome) VALUES 
+("Pequeno"),
+("Médio"),
+("Grande");
+
+-- Create tbl_animais
+CREATE TABLE tbl_animais (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    nascimento DATE,
+    peso DECIMAL(10, 2),
+    img VARCHAR(200),
+	cliente_id INT NOT NULL,
+    porte_id INT NOT NULL,
+	raca_id INT NOT NULL,
+    FOREIGN KEY (cliente_id) REFERENCES tbl_clientes(id),
+    FOREIGN KEY (porte_id) REFERENCES tbl_animal_porte(id),
+    FOREIGN KEY (raca_id) REFERENCES tbl_animal_raca(id)
+);
+select * from tbl_clientes;
+INSERT INTO tbl_animais (nome,nascimento,peso,cliente_id,porte_id,raca_id) VALUES 
+("Paçoca","2014-10-15",20,1,1,7),
+("Gigi","2010-02-10",10,2,1,9),
+("Junior","2020-03-11",8,1,2,1)
+;
+
+
+-- Create tbl_agendamentos
+CREATE TABLE tbl_agendamentos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    data_agendamento DATETIME NOT NULL,
+	animal_id INT NOT NULL,
+    FOREIGN KEY (animal_id) REFERENCES tbl_animais(id)
+);
+insert into tbl_agendamentos (data_agendamento, animal_id) VALUES ('2020-02-10',2);
+insert into tbl_agendamentos (data_agendamento, animal_id) VALUES ('2020-02-10',1);
+show tables;
+-- Create tbl_servicos
+CREATE TABLE tbl_servicos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    descricao TEXT,
+    preco DECIMAL(10, 2) NOT NULL
+);
+INSERT INTO tbl_servicos (nome,descricao,preco) VALUES 
+("Banho", "Dê banho no seu bichinho", "30"),
+("Tosa", "Dê uma tosa no seu bichinho", "40")
+;
+
+-- Create tbl_agendamento_servico
+CREATE TABLE tbl_agendamento_servico (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    agendamento_id INT NOT NULL,
+    servico_id INT NOT NULL,
+    FOREIGN KEY (agendamento_id) REFERENCES tbl_agendamentos(id),
+    FOREIGN KEY (servico_id) REFERENCES tbl_servicos(id)
+);
+insert into tbl_agendamento_servico (agendamento_id, servico_id) VALUES (1,1);
+insert into tbl_agendamento_servico (agendamento_id, servico_id) VALUES (1,2);
+insert into tbl_agendamento_servico (agendamento_id, servico_id) VALUES (2,1);
+insert into tbl_agendamento_servico (agendamento_id, servico_id) VALUES (2,2);
+-- Create tbl_especialidades
+CREATE TABLE tbl_cargos (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(50) NOT NULL
+);
+INSERT INTO tbl_cargos (nome) VALUES 
+("Veterinário"),
+("Tosador"),
+("Atendente"),
+("Estoquista")
+;
+
+
+
+-- Create tbl_profissionais
+CREATE TABLE tbl_funcionarios (
+    id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+    nome VARCHAR(100) NOT NULL,
+    telefone VARCHAR(11) NOT NULL,
+    email VARCHAR(100) NOT NULL,
+	senha VARCHAR(100) NOT NULL,
+	endereco_id INT NOT NULL,
+    FOREIGN KEY (endereco_id) REFERENCES tbl_endereco(id)
+);
+INSERT INTO tbl_funcionarios (nome,telefone,email,senha,endereco_id) VALUES 
+("Letícia",1111111,"Leticia@",123,1),
+("Matheus",1111111,"Matheus@",123,2),
+("Inocente",1111111,"Leticia@",123,3),
+("Rubens",1111111,"Matheus@",123,4)
+;
+
+CREATE TABLE tbl_cargos_funcionarios (
+id INT AUTO_INCREMENT PRIMARY KEY NOT NULL,
+cargo_id INT NOT NULL,
+funcionario_id INT NOT NULL,
+FOREIGN KEY (cargo_id) REFERENCES tbl_cargos(id),
+FOREIGN KEY (funcionario_id) REFERENCES tbl_funcionarios(id)
+);
+INSERT INTO tbl_cargos_funcionarios (cargo_id,funcionario_id) VALUES 
+(1,1),
+(2,2),
+(3,3),
+(4,4),
+(1,4)
+;
+
+-- Create tbl_agendamento_profissionais
+CREATE TABLE tbl_agendamento_funcionario (
+    id INT AUTO_INCREMENT PRIMARY KEY,
+    funcionario_id INT NOT NULL,
+    agendamento_id INT NOT NULL,
+    FOREIGN KEY (funcionario_id) REFERENCES tbl_funcionarios(id),
+    FOREIGN KEY (agendamento_id) REFERENCES tbl_agendamentos(id)
+);
+insert into tbl_agendamento_funcionario (agendamento_id, funcionario_id) VALUES (1,1);
+insert into tbl_agendamento_funcionario (agendamento_id, funcionario_id) VALUES (1,2);
+insert into tbl_agendamento_funcionario (agendamento_id, funcionario_id) VALUES (1,4);
+
+select * from tbl_agendamentos join tbl_agendamento_funcionario on tbl_agendamento_funcionario.agendamento_id = tbl_agendamentos.id;
+
+
+
+
+
+SELECT cast(LAST_INSERT_ID() AS DECIMAL) AS id FROM TBL_ENDERECO LIMIT 1;
+describe tbl_clientes;
+describe tbl_funcionarios;
+describe tbl_endereco;
+show tables;
+select tbl_funcionarios.nome, tbl_endereco.rua,tbl_endereco.bairro,tbl_endereco.cidade,tbl_endereco.estado,tbl_endereco.complemento from tbl_funcionarios join tbl_endereco on endereco_id = tbl_endereco.id where tbl_funcionarios.id = 9;
+select * from tbl_endereco;
+select * from tbl_clientes;
+select * from tbl_clientes;
+select tbl_animais.id,tbl_animais.nome,nascimento,peso,tbl_animais.img,tipo_id,porte_id, raca_id from tbl_animais join tbl_clientes on cliente_id = tbl_clientes.id;
+describe tbl_animal_raca;
+show tables;
+describe tbl_animais;
+select * from tbl_animais;
+select tbl_clientes.nome as Dono, tbl_animais.nome,nascimento,peso,tbl_animal_porte.nome as porte, tbl_animal_raca.nome as raca from tbl_animais join tbl_clientes on cliente_id = tbl_clientes.id join tbl_animal_raca on raca_id = tbl_animal_raca.id join tbl_animal_porte on porte_id = tbl_animal_porte.id;
+select * from tbl_animal_raca;
+SELECT * FROM tbl_animal_raca WHERE tipo_id = 1;
+select * from tbl_cargos;
+select * from tbl_cargos_funcionarios;
+show tables;
+select * from tbl_agendamento_funcionario;
+SELECT Filmes.id,Filmes.nome,sinopse,duracao,data_lancamento,data_relancamento,foto_capa,foto_fundo,cor,(SELECT GROUP_CONCAT(Generos.nome SEPARATOR ', ') FROM filme_genero INNER JOIN Generos ON filme_genero.id_genero = Generos.id WHERE filme_genero.id_filme = Filmes.id) AS Genero FROM Filmes LEFT JOIN filme_genero ON Filmes.id = filme_genero.id_filme LEFT JOIN Generos ON filme_genero.id_genero = Generos.id LEFT JOIN ator_filme ON filmes.id = ator_filme.id_filme LEFT JOIN atores ON ator_filme.id_ator = atores.id LEFT JOIN diretor_filme ON filmes.id = diretor_filme.id_filme LEFT JOIN diretores ON diretor_filme.id_diretor = diretores.id WHERE (Filmes.nome LIKE '%${search}%' OR Filmes.sinopse LIKE '%${search}%' OR Atores.nome LIKE '%${search}%' OR Diretores.nome LIKE '%${search}%') AND (Filmes.id_classificacao_indicativa<=${filter.maxAge}) AND (Filmes.data_lancamento>='0001-01-01' AND Filmes.data_lancamento<='9999-12-31') AND (Generos.id IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21)) GROUP BY Filmes.id;
+select tbl_agendamentos.id, data_agendamento, animal_id, tbl_agendamento_funcionario.id, funcionario_id, tbl_agendamento_servico.id, servico_id from tbl_agendamentos left join tbl_agendamento_funcionario on tbl_agendamento_funcionario.agendamento_id = tbl_agendamentos.id left join tbl_agendamento_servico on tbl_agendamento_servico.agendamento_id = tbl_agendamentos.id;
+select tbl_agendamentos.id, data_agendamento, animal_id, tbl_agendamento_funcionario.id, (SELECT GROUP_CONCAT(funcionario_id SEPARATOR ',')), tbl_agendamento_servico.id, tbl_agendamento_servico.agendamento_id, servico_id from tbl_agendamentos left join tbl_agendamento_funcionario on tbl_agendamento_funcionario.agendamento_id = tbl_agendamentos.id left join tbl_agendamento_servico on tbl_agendamento_servico.agendamento_id = tbl_agendamentos.id GROUP BY tbl_agendamentos.id;
+select * from tbl_agendamentos left join tbl_agendamento_funcionario on tbl_agendamento_funcionario.agendamento_id = tbl_agendamentos.id left join tbl_agendamento_servico on tbl_agendamento_servico.agendamento_id = tbl_agendamentos.id;
+select * from tbl_agendamento_funcionario;
+select * from tbl_agendamento_servico;
+
+
+
+
+SELECT 
+    tbl_agendamentos.id, 
+    data_agendamento, 
+    animal_id, 
+    GROUP_CONCAT(funcionario_id SEPARATOR '-' )as funcionarios,
+    GROUP_CONCAT(servico_id SEPARATOR '-') as servicos
+FROM 
+    tbl_agendamentos 
+LEFT JOIN 
+    tbl_agendamento_funcionario 
+    ON tbl_agendamento_funcionario.agendamento_id = tbl_agendamentos.id 
+LEFT JOIN 
+    tbl_agendamento_servico 
+    ON tbl_agendamento_servico.agendamento_id = tbl_agendamentos.id 
+GROUP BY 
+    tbl_agendamentos.id;
+    
+    
+    
+    
+    SELECT 
+    a.id, 
+    a.data_agendamento, 
+    a.animal_id, 
+    COALESCE(f.funcionarios, '') AS funcionarios,
+    COALESCE(s.servicos, '') AS servicos
+FROM 
+    tbl_agendamentos a
+LEFT JOIN (
+    SELECT 
+        af.agendamento_id, 
+        GROUP_CONCAT(DISTINCT af.funcionario_id SEPARATOR '-') AS funcionarios
+    FROM 
+        tbl_agendamento_funcionario af
+    GROUP BY 
+        af.agendamento_id
+) f ON a.id = f.agendamento_id
+LEFT JOIN (
+    SELECT 
+        asv.agendamento_id, 
+        GROUP_CONCAT(DISTINCT asv.servico_id SEPARATOR '-') AS servicos
+    FROM 
+        tbl_agendamento_servico asv
+    GROUP BY 
+        asv.agendamento_id
+) s ON a.id = s.agendamento_id where a.id = 1;
+SELECT tbl_funcionarios.id,tbl_funcionarios.nome,telefone,email,senha,endereco_id,(SELECT GROUP_CONCAT(tbl_cargos.id SEPARATOR '-') FROM tbl_cargos INNER JOIN tbl_cargos_funcionarios ON tbl_cargos_funcionarios.cargo_id = tbl_cargos.id WHERE tbl_cargos_funcionarios.cargo_id= tbl_cargos.id) AS cargos from tbl_funcionarios join tbl_cargos_funcionarios on funcionario_id = tbl_funcionarios.id join tbl_cargos on cargo_id = tbl_cargos.id;
+
+SELECT 
+    f.id,
+    f.nome,
+    f.telefone,
+    f.email,
+    f.senha,
+    f.endereco_id,
+    (SELECT 
+        GROUP_CONCAT(c.id SEPARATOR '-') 
+     FROM 
+        tbl_cargos c 
+     INNER JOIN 
+        tbl_cargos_funcionarios cf 
+     ON 
+        c.id = cf.cargo_id 
+     WHERE 
+        cf.funcionario_id = f.id
+    ) AS cargos
+FROM 
+    tbl_funcionarios f;
+
+
+
+
+select * from tbl_cargos_funcionarios;
+select * from tbl_cargos;
+show tables;
+SELECT Filmes.id,Filmes.nome,sinopse,duracao,data_lancamento,data_relancamento,foto_capa,foto_fundo,cor,id_classificacao_indicativa AS classificacao, (SELECT GROUP_CONCAT(Generos.nome SEPARATOR ', ') FROM filme_genero INNER JOIN Generos ON filme_genero.id_genero = Generos.id WHERE filme_genero.id_filme = Filmes.id) AS Genero FROM Filmes LEFT JOIN filme_genero ON Filmes.id = filme_genero.id_filme LEFT JOIN Generos ON filme_genero.id_genero = Generos.id LEFT JOIN ator_filme ON filmes.id = ator_filme.id_filme LEFT JOIN atores ON ator_filme.id_ator = atores.id LEFT JOIN diretor_filme ON filmes.id = diretor_filme.id_filme LEFT JOIN diretores ON diretor_filme.id_diretor = diretores.id WHERE (Filmes.nome LIKE '%${search}%' OR Filmes.sinopse LIKE '%${search}%' OR Atores.nome LIKE '%${search}%' OR Diretores.nome LIKE '%${search}%') AND (Filmes.id_classificacao_indicativa<=${filter.maxAge}) AND (Filmes.data_lancamento>='0001-01-01' AND Filmes.data_lancamento<='9999-12-31') AND (Generos.id IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21)) GROUP BY Filmes.id
+
+SELECT Filmes.id,Filmes.nome,sinopse,duracao,data_lancamento,data_relancamento,foto_capa,foto_fundo,cor,id_classificacao_indicativa AS classificacao, (SELECT GROUP_CONCAT(Generos.nome SEPARATOR ', ') FROM filme_genero INNER JOIN Generos ON filme_genero.id_genero = Generos.id WHERE filme_genero.id_filme = Filmes.id) AS Genero FROM Filmes LEFT JOIN filme_genero ON Filmes.id = filme_genero.id_filme LEFT JOIN Generos ON filme_genero.id_genero = Generos.id LEFT JOIN ator_filme ON filmes.id = ator_filme.id_filme LEFT JOIN atores ON ator_filme.id_ator = atores.id LEFT JOIN diretor_filme ON filmes.id = diretor_filme.id_filme LEFT JOIN diretores ON diretor_filme.id_diretor = diretores.id WHERE (Filmes.nome LIKE '%${search}%' OR Filmes.sinopse LIKE '%${search}%' OR Atores.nome LIKE '%${search}%' OR Diretores.nome LIKE '%${search}%') AND (Filmes.id_classificacao_indicativa<=${filter.maxAge}) AND (Filmes.data_lancamento>='0001-01-01' AND Filmes.data_lancamento<='9999-12-31') AND (Generos.id IN (1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16,17,18,19,20,21)) GROUP BY Filmes.id
+
+
+    
+    
+    
+    
+    
+    select tbl_agendamentos.id,data_agendamento,animal_id,funcionario_id,servico_id from tbl_agendamentos LEFT JOIN tbl_agendamento_funcionario ON tbl_agendamento_funcionario.agendamento_id = tbl_agendamentos.id LEFT JOIN 
+    tbl_agendamento_servico ON tbl_agendamento_servico.agendamento_id = tbl_agendamentos.id;
+
+
+
+select tbl_agendamentos.id, data_agendamento, animal_id, tbl_agendamento_funcionario.id, funcionario_id, tbl_agendamento_servico.id, servico_id from tbl_agendamentos left join tbl_agendamento_funcionario on tbl_agendamento_funcionario.agendamento_id = tbl_agendamentos.id left join tbl_agendamento_servico on tbl_agendamento_servico.agendamento_id = tbl_agendamentos.id;
